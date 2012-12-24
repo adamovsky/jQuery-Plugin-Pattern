@@ -1,4 +1,4 @@
-(function($, config)
+ (function($, config)
   {
    //---------------------------------------------------------------------------------------------
    //
@@ -15,8 +15,8 @@
    //---------------------------------------------------------------------------------------------
    //
    // [PLUGIN CHAINING CODE]
-   // This gets executed everytime the plugin gets instantiated.  This is an optional
-   // helper function.
+   // This gets executed everytime the plugin gets instantiated.
+   //
 
    function _(fn)      // local function that facilitates chainability
     {
@@ -24,10 +24,10 @@
              {
               var self = this;
               
-              return $this.each(function () 
-                                 {
-                                  fn.call(self, args); 
-                                 });
+              return $selected.each(function () 
+                                     {
+                                      fn.call(self, args); 
+                                     });
                                  
              };
     }
@@ -125,7 +125,7 @@
    
      if (instantiate === true && objectExists === false)
       {
-       classObject = new getPluginClass(args[0].properties || {});
+       classObject = new getPluginClass(this, args[0].properties || {});
               
        jqCache.push({ 
                      // "config" : {}, // this gets set AFTER the classObject is resolved
@@ -182,7 +182,9 @@
                            
                             var selector = arguments[0],
                                 context = arguments[1],
-                                rootQuery = arguments[2];
+                                rootQuery = arguments[2],
+                                
+                                $this;
                                 
                             classObject = null;
                             
@@ -210,7 +212,7 @@
       }
     }
 
-   var $this,
+   var $selected,
        classObject, 
        jqInit = $.fn.init,
        jqCache = [],
@@ -231,3 +233,4 @@
       "pool" : document,  // this is optional event pool (see the try/catch above to see how it's used)
       "version" : "1.0"   // version of your plugin
      });
+   
