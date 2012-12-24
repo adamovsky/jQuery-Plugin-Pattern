@@ -2,6 +2,9 @@ jQuery Plugin Pattern
 
 The goal of this project is to provide a way to code jQuery plugin in a way that allow traditional object oriented programming paradigms (dot notation, inheritance, etc) while still not breaking the official jQuery plugin authoring pattern.
 
+Syntax
+======
+
 The idea is to be able to choose which syntax you would like to offer with your plugin.  Here are a few syntax that should be possible with this plugin pattern:
 
   $(selector).plugin(opts);
@@ -17,4 +20,45 @@ The main change here is the ability to return an instantiated class object rathe
 
 The other goal is to make sure that you can run multiple instances of your plugin side-by-side without effecting each other.  For example, if you have two carousels on one page, you do not want both of them to scroll if you click the navigation buttons on one of them.  In other words, they have to be atomic.
 
+Example
+=======
+
+Let's say I want to create a new plugin.  The plugin I want to create is a carousel.  The first thing I will do is go to jquery.com and find out how to author my plugin.  I will quickly find out that I will need to create a plugin that has an interface similar to this:
+
+  $(selector).carousel({
+                        left : callback,
+                        slides : [
+                                  content,
+                                  content,
+                                  content
+                                 ],
+                        right : callback
+                       });
+                 
+Now my carousel has all the building blocks to get plugged into the page and be used.  Inside my plugin I will wire up my event handlers to respond for the left and right clicks and execute the respective callbacks.
+
+The above might cause a problem if my plugin gets used on a page where we already use someone else's plugin that shares the same name.  One would override the other.
+
+What if I want to dynamically rewire my plugin's right callback?  Let's say, I want that depending on user behavior the callback that gets executed differs.
+
+  $(selector).carousel.right(callback);
+  
+That would be cool right?  Now when I call the above, it executes the given callback. 
+
+Okay, okay, what if we want to have some default behavior and also be able to override the callback as explained above?
+
+  $(selector).carousel({
+                        right : callback
+                       });
+                       
+  $(selector).carousel.right();
+                       
+  $(selector).carousel.right(callback);
+ 
+  $(selector).carousel.right();
+ 
+This would cause the first right() call to execute the default callback, and the second one would execute the explicit callback.  The third one would yet again call the default one.  Sweet!
+
 Let your imagination run wild now how you want your users to interface with your plugin !
+
+Make sure to visit my blog at http://milan.adamovsky.com
