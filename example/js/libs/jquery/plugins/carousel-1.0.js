@@ -14,7 +14,6 @@
     
      var content;  // this is needed in case we create new jquery objects within the plugin code
          
-     debugger;
      args = $.extend({
                       "content" : "some random content",
                       "left" : leftHandler,
@@ -67,7 +66,6 @@
                 
      function render(args)
       {
-       debugger;
        var $jq,
            template = args ||'<a href="" class="left">\
                                 left\
@@ -212,7 +210,8 @@
    
      if (instantiate === true && objectExists === false)
       {
-       classObject = new getPluginClass(this, args[0].properties || {});
+       classObject = new getPluginClass(this, 
+                                        args[0] && args[0].properties || {});
               
        jqCache.push({ 
                      // "config" : {}, // this gets set AFTER the classObject is resolved

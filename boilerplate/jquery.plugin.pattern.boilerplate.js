@@ -1,3 +1,4 @@
+
  (function($, config)
   {
    //---------------------------------------------------------------------------------------------
@@ -5,9 +6,9 @@
    // [PLUGIN CLASS CODE]
    // This is the meat of the plugin.  It is the class that gets instantiated.  
    //
-   function getPluginClass(args)
+   function getPluginClass($this, args)
     {
-     // This is where your plugin code would go as a traditional JavaScript object.
+     // Your code goes here
      
      return this;
     }
@@ -104,7 +105,8 @@
    
      if (instantiate === true && objectExists === false)
       {
-       classObject = new getPluginClass(this, args[0].properties || {});
+       classObject = new getPluginClass(this, 
+                                        args[0] && args[0].properties || {});
               
        jqCache.push({ 
                      // "config" : {}, // this gets set AFTER the classObject is resolved
@@ -200,13 +202,13 @@
            
    initPlugin({
                "name" : config.name || "unknown",  // plugin name 
-               "pool" : config.pool || document   // event pool
+               "pool" : config.pool || document    // event pool
               });    
               
    //---------------------------------------------------------------------------------------------    
   })(jQuery, 
      {      
-      "name" : "plugin",  // plugin namespace
-      "pool" : document  // this is optional event pool (see the try/catch above to see how it's used)
+      "name" : "carousel",
+      "pool" : document
      });
    
