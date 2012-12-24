@@ -14,27 +14,6 @@
 
    //---------------------------------------------------------------------------------------------
    //
-   // [PLUGIN CHAINING CODE]
-   // This gets executed everytime the plugin gets instantiated.
-   //
-
-   function _(fn)      // local function that facilitates chainability
-    {
-     return function (args)
-             {
-              var self = this;
-              
-              return $selected.each(function () 
-                                     {
-                                      fn.call(self, args); 
-                                     });
-                                 
-             };
-    }
-       
-
-   //---------------------------------------------------------------------------------------------
-   //
    // [PLUGIN CONFIG CODE]
    // This gets executed everytime the plugin gets instantiated.
    //
@@ -212,8 +191,7 @@
       }
     }
 
-   var $selected,
-       classObject, 
+   var classObject, 
        jqInit = $.fn.init,
        jqCache = [],
        pluginContext,
@@ -222,15 +200,13 @@
            
    initPlugin({
                "name" : config.name || "unknown",  // plugin name 
-               "pool" : config.pool || document,   // event pool
-               "version" : config.version || "1.0" // plugin version
+               "pool" : config.pool || document   // event pool
               });    
               
    //---------------------------------------------------------------------------------------------    
   })(jQuery, 
      {      
       "name" : "plugin",  // plugin namespace
-      "pool" : document,  // this is optional event pool (see the try/catch above to see how it's used)
-      "version" : "1.0"   // version of your plugin
+      "pool" : document  // this is optional event pool (see the try/catch above to see how it's used)
      });
    

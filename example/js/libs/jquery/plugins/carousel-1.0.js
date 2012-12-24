@@ -122,27 +122,6 @@
 
    //---------------------------------------------------------------------------------------------
    //
-   // [PLUGIN CHAINING CODE]
-   // This gets executed everytime the plugin gets instantiated.
-   //
-
-   function _(fn)      // local function that facilitates chainability
-    {
-     return function (args)
-             {
-              var self = this;
-              
-              return $selected.each(function () 
-                                     {
-                                      fn.call(self, args); 
-                                     });
-                                 
-             };
-    }
-       
-
-   //---------------------------------------------------------------------------------------------
-   //
    // [PLUGIN CONFIG CODE]
    // This gets executed everytime the plugin gets instantiated.
    //
@@ -320,8 +299,7 @@
       }
     }
 
-   var $selected,
-       classObject, 
+   var classObject, 
        jqInit = $.fn.init,
        jqCache = [],
        pluginContext,
