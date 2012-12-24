@@ -1,1 +1,20 @@
 jQuery Plugin Pattern
+
+The goal of this project is to provide a way to code jQuery plugin in a way that allow traditional object oriented programming paradigms (dot notation, inheritance, etc) while still not breaking the official jQuery plugin authoring pattern.
+
+The idea is to be able to choose which syntax you would like to offer with your plugin.  Here are a few syntax that should be possible with this plugin pattern:
+
+  $(selector).plugin(opts);
+  $(selector).plugin(opts).method(opts);
+  $(selector).plugin.method(opts);
+  $(selector).plugin.some.inherited.class.method(opts);
+  $(selector).plugin.method(opts).jquery(opts);
+  $(selector).plugin(opts).jquery(opts);
+  
+The jquery(opts) suggests a chainable jQuery object - or in other words, the way jQuery is architected to work.
+
+The main change here is the ability to return an instantiated class object rather than a jquery object.  This effectively allows you to namespace your code.
+
+The other goal is to make sure that you can run multiple instances of your plugin side-by-side without effecting each other.  For example, if you have two carousels on one page, you do not want both of them to scroll if you click the navigation buttons on one of them.  In other words, they have to be atomic.
+
+Let your imagination run wild now how you want your users to interface with your plugin !
