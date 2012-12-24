@@ -1,5 +1,7 @@
-jQuery Plugin Pattern
+jQuery Plugin Pattern 
 
+by Milan Adamovsky
+ 
 The goal of this project is to provide a way to code jQuery plugin in a way that allow traditional object oriented programming paradigms (dot notation, inheritance, etc) while still not breaking the official jQuery plugin authoring pattern.
 
 Syntax
