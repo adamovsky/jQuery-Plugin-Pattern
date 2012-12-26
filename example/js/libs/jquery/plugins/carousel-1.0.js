@@ -1,3 +1,4 @@
+var xyz = false;
 
  (function($, config)
   {
@@ -14,6 +15,12 @@
     
      var content;  // this is needed in case we create new jquery objects within the plugin code
          
+     if (!$this)
+      {
+     //  debugger;
+       $this = $self;
+      }
+      
      args = $.extend({
                       "content" : "some random content",
                       "left" : leftHandler,
@@ -26,6 +33,7 @@
      this.version = "1.0";     
      
      this.content = contentFn;
+     this.init = init;
      this.left = left;     
      this.render = render;
      this.right = right;
@@ -36,9 +44,11 @@
        render();
       }
       
-     function init()
+     function init($)
       {
-       render();
+       $this = $;
+      // debugger;
+       this.render();
       }
       
      function left(args)
@@ -112,8 +122,10 @@
        $(".right", $this).on("click",
                              callback);
       }
-     
-     init();
+    
+  //  You should NOT run any code from within your class.  Have the init() function contain all the 
+  //  logic you want to execute by default. 
+  //   init();
      
      return this;
     }
@@ -169,6 +181,12 @@
          jqCacheLength = jqCache.length,
          objectExists = false; 
          
+     // We need this line so that the class can populate its $this in methods that are part of 
+     // a singleton class.
+     $self = this;
+                              
+  //   console.log('  initObject - instantiate: ', instantiate, ' args: ', args, ' stack: ', this, ' - $self: ', $self);
+     
      if (jqCacheLength > 0)
       this.each(function (index, element)
                  {
@@ -207,11 +225,40 @@
                    x++;
                   }
                  });
-   
-     if (instantiate === true && objectExists === false)
+
+     if (instantiate === false && objectExists === false)
       {
-       classObject = new getPluginClass(this, 
-                                        args[0] && args[0].properties || {});
+       if (args.callee.caller.caller == null)
+        {
+        // debugger;
+        
+         // We need to make this non-chainable to expose the class object since we know we
+         // will not jQuery chain it (since it will be $(selector).plugin.method())
+         initConfig({
+                     "chainable" : false
+                    }),
+         
+         classObj.init(this);
+         
+         jqCache.push({ 
+                       // "config" : {}, // this gets set AFTER the classObject is resolved
+                       "elements" : this, 
+                       "object" : classObj 
+                      });
+         
+         jqCache[jqCache.length - 1].config = getConfig();
+                      
+         $.extend($.fn[pluginName].constructor.prototype, classObj);
+         
+         classObject = classObj;
+         debugger;
+        }
+ //      debugger;
+      }                             
+     else if (instantiate === true && objectExists === false)
+    // if (this.length > 0 && objectExists === false)
+      {
+       classObject = new getPluginClass(this, args[0] && args[0].properties || {});
               
        jqCache.push({ 
                      // "config" : {}, // this gets set AFTER the classObject is resolved
@@ -230,14 +277,16 @@
        // default config values.
        if (instantiate === true)
         initConfig(args[0]),
-        jqCache[jqCache.length - 1].config = getConfig();
+        jqCache[jqCache.length - 1].config = getConfig(),
+        classObject.init(this);
        
-       $.extend($.fn[pluginName], classObject);        
+       $.extend($.fn[pluginName].constructor.prototype, classObject); 
+              
       }        
       
      return getConfig().chainable === true   // checks for chaining in main plugin
              ? this                          // returns chainability hook
-             : classObject;                  // returns OOP object hook                           
+             : classObj || classObject;                  // returns OOP object hook                           
     }
     
    function initPlugin(args)
@@ -250,45 +299,56 @@
 
      try                                       // meat 
       {
+       
        // Step 1: register plugin
+       
+       classObj = new getPluginClass(args[0] && args[0].properties || {});
+       
        $.fn[pluginName] = function () 
                            {
+                            debugger;
                             // This gets called AFTER the init() and mainly is responsible for taking the
                             // arguments passed into a plugin call.
                             return initObject.apply(this, [true, arguments]);
                            };
-                           
+                        
+       $.extend($.fn[pluginName].constructor.prototype, classObj);
+      
        // Step 2: intercept jquery init
-       $.fn.extend({                            // now we overwrite jQuery's internal init() so we
-                                                // can intercept the selector and context.
-                    init: function( ) 
-                           {
-                            // When we call a plugin like $(selector).plugin(), this init() will be called
-                            // BEFORE the above step 1 gets called.
-                           
-                            var selector = arguments[0],
-                                context = arguments[1],
-                                rootQuery = arguments[2],
-                                
-                                $this;
-                                
-                            classObject = null;
-                            
-                            pluginContext = context;
-                            pluginSelector = selector;
-                            
-                            $this = new jqInit(selector, context, rootQuery);
-                            
-                            // The reason we need the following is to find if we already have an object
-                            // for the given selector.  This will be necessary for syntax calls such 
-                            // as $(selector).plugin.method() - in other words, where plugin does not
-                            // take parenthesis.
-                            
-                            initObject.apply($this, [false, arguments]);
+       $.fn.extend({ 
+                   "init" : function () 
+                             {
+                              // When we call a plugin like $(selector).plugin(), this init() will be called
+                              // BEFORE the above step 1 gets called.
                              
-                            return $this;
-                           }
+                              var selector = arguments[0],
+                                  context = arguments[1],
+                                  rootQuery = arguments[2];
+                                  
+                            //      $this;
+                                  
+                              classObject = null;
+                              
+                              pluginContext = context;
+                              pluginSelector = selector;
+                              
+                              $self = new jqInit(selector, context, rootQuery);
+                            
+                              // The reason we need the following is to find if we already have an object
+                              // for the given selector.  This will be necessary for syntax calls such 
+                              // as $(selector).plugin.method() - in other words, where plugin does not
+                              // take parenthesis.
+                              
+                           //   console.log('selector: ', selector, ' context: ', context, ' stack: ', $self);
+                           
+                            //  debugger;
+                              initObject.apply($self, [false, arguments]);
+                               
+                              
+                              return $self;
+                             }
                    });
+                   
 
       }
      catch (error)
@@ -298,12 +358,16 @@
       }
     }
 
-   var classObject, 
+   var $self, // this is a weird one.  We have to have it here for uninstantiated $(selector).plugin.method() syntax
+       classObj,
+       classObject, 
        jqInit = $.fn.init,
        jqCache = [],
        pluginContext,
        pluginName,
        pluginSelector;
+           
+     //      debugger;
            
    initPlugin({
                "name" : config.name || "unknown",  // plugin name 
