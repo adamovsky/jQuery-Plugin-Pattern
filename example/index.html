@@ -50,6 +50,7 @@
     <script type="text/javascript" src="js/libs/jquery/plugins/carousel-1.0.js">     
     </script>
     <script type="text/javascript">
+    /*
      $(document).ready(function () {
  
           $(".jqnyc.carousel").carousel({
@@ -74,39 +75,120 @@
                                        "chainable" : false  
                                       }).content("Hello There!");
                                       
+       $(".jqnyc.carousel").carousel.setMessage("My Carousel !");
 
-                                     
+       $(".jqnyc.carousel").carousel.getMessage();                                     
+
+       $(".jqnyc.carousels").carousel.setMessage("My Carousels !");
+
+       $(".jqnyc.carousels").carousel.getMessage();           
+
+       $(".jqnyc.carousel").carousel.getMessage();                                     
+
       });
-      
+      */
     </script>
   </head>
   <body>
-    <div class="jqnyc carousel">
+    <div class="jqnyc carousels">
      A
     </div>
-    <div class="jqnyc carousel">
+    <div class="jqnyc carousels">
      B
     </div>
-    <div class="jqnyc carousels">
+    <div class="jqnyc carousel">
      C
     </div>
 
-    <div class="jqnyc carousel">
+    <div class="jqnyc carousels">
      D
     </div>
     
-    <div class="jqnyc carousel">
+    <div class="jqnyc carousels">
      E
     </div>
     <div class="jqnyc messagebox">
      c
     </div>
     <script>
-                                          
-     //$(".jqnyc.carousel").carousel();
-     // $(".jqnyc.carousel").carousel.render();
-     // $(".jqnyc.carousels").carousel.render();
-     // alert($(".jqnyc.carousel").carousel.xxx);
+    
+       // In this particular demonstration we show how we can namespace our plugin without having
+       // to instantiate it via an explicit call.  In other words we do not need to do something
+       // like $(selector).plugin() to get the namespace!  
+    
+       // First instance where we set the value.
+       $(".jqnyc.carousel").carousel.setMessage("My Single Carousel !");
+       $(".jqnyc.carousel").carousel.getMessage();                                     
+
+       // Here we select another set of elements (notice the different class in the selector)
+       // that implies a new instance of the plugin.  Now we set the value to My Carousels !
+       $(".jqnyc.carousels").carousel.setMessage("My Many Carousels !");
+       $(".jqnyc.carousels").carousel.getMessage();           
+
+       // This should be 'My Single Carousel !' since we refer to the first instance where we set 
+       // the message.
+       $(".jqnyc.carousel").carousel.getMessage();   
+
+       // This should be 'My Many Carousels !' since we refer to the second instance where we set 
+       // the message.  The tricky part internally is that we don't want to accidently work on our
+       // last resolved instance (single carousel) but properly select the second instance (many
+       // carousels).
+     //  $(".jqnyc.carousels").carousel.getMessage();  
+
+    /*
+       // First instance where we set the value.
+       $(".jqnyc.carousel").carousel({"chainable" : false}).setMessage("My Single Carousel !");
+       $(".jqnyc.carousel").carousel({"chainable" : false}).getMessage();                                     
+
+       // Here we select another set of elements (notice the different class in the selector)
+       // that implies a new instance of the plugin.  Now we set the value to My Carousels !
+       $(".jqnyc.carousels").carousel({"chainable" : false}).setMessage("My Many Carousels !");
+       $(".jqnyc.carousels").carousel({"chainable" : false}).getMessage();           
+
+       // This should be 'My Single Carousel !' since we refer to the first instance where we set 
+       // the message.
+       $(".jqnyc.carousel").carousel({"chainable" : false}).getMessage();   
+
+       // This should be 'My Many Carousels !' since we refer to the second instance where we set 
+       // the message.  The tricky part internally is that we don't want to accidently work on our
+       // last resolved instance (single carousel) but properly select the second instance (many
+       // carousels).
+       $(".jqnyc.carousels").carousel({"chainable" : false}).getMessage();  
+
+       // Here we will try to work with a instance of the plugin that cannot exist since there
+       // is no :eq(1) .jqnyc.carousel element - thus no plugin instance.  Default values will
+       // thus apply ("No Message Found").  However if you were to do :eq(0) it will work ! 
+       $(".jqnyc.carousel:eq(1)").carousel({"chainable" : false}).setMessage("My First Carousel !");
+       $(".jqnyc.carousel:eq(1)").carousel({"chainable" : false}).getMessage();        
+
+       // Back to the first instance should say "My Single Carousel !"
+       $(".jqnyc.carousel").carousel({"chainable" : false}).getMessage();  
+
+       // Back to the second instance should say "My Many Carousels !"
+       $(".jqnyc.carousels").carousel({"chainable" : false}).getMessage();  
+
+       // Here we will try to work with the first instance of the plugin from a collection ! 
+       // BUG: This does not seem to work, an issue needs to be opened.
+       $(".jqnyc.carousels:eq(0)").carousel({"chainable" : false}).setMessage("My First Carousel !");
+       $(".jqnyc.carousels:eq(0)").carousel({"chainable" : false}).getMessage(); 
+       
+       // Here we will try to work with the second instance of the plugin from a collection ! 
+       $(".jqnyc.carousels:eq(1)").carousel({"chainable" : false}).setMessage("My Second Carousel !");
+       $(".jqnyc.carousels:eq(1)").carousel({"chainable" : false}).getMessage();  
+
+       // Here we will try to work with the third instance of the plugin from a collection ! 
+       $(".jqnyc.carousels:eq(2)").carousel({"chainable" : false}).setMessage("My Third Carousel !");
+       $(".jqnyc.carousels:eq(2)").carousel({"chainable" : false}).getMessage();  
+
+       // Here we will try to work with the fourth instance of the plugin from a collection ! 
+       $(".jqnyc.carousels:eq(3)").carousel({"chainable" : false}).setMessage("My Fourth Carousel !");
+       $(".jqnyc.carousels:eq(3)").carousel({"chainable" : false}).getMessage();  
+
+       // Here we will try to work with the fifth instance of the plugin from a collection - however
+       // since it doesnt work we should get the default message of "No message found!" 
+       $(".jqnyc.carousels:eq(4)").carousel({"chainable" : false}).setMessage("My Fifth Carousel !");
+       $(".jqnyc.carousels:eq(4)").carousel({"chainable" : false}).getMessage(); 
+       */
     </script>
   </body>
 </html>

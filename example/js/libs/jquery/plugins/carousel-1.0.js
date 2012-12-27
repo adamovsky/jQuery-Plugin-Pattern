@@ -30,14 +30,30 @@ var xyz = false;
                         
      content = args.content;
     
+     this.message = "No message found";
      this.version = "1.0";     
      
      this.content = contentFn;
+     this.getMessage = getMessage;        
      this.init = init;
-     this.left = left;     
+     this.left = left;  
      this.render = render;
      this.right = right;
+     this.setMessage = setMessage;     
 
+     // The following getter/setter are supposed to show state memory of the pattern
+     function getMessage()
+      {
+       console.log(this.message);
+      }
+
+     function setMessage(msg)
+      {
+      // console.log ('  SET MESSAGE : ', msg, ' - this: ', this);
+       debugger;
+       this.message = msg;
+      }
+  
      function contentFn(str)
       {
        content = args.content = str;
@@ -171,9 +187,10 @@ var xyz = false;
    // of the plugin
    //
    
-   function initObject(instantiate, args)
+   function initObject(pluginName, instantiate, args)
     {
      var classKey,
+         classObject,
          elementExists = false,
          matchCounter = 0, 
          x = 0,
@@ -183,9 +200,9 @@ var xyz = false;
          
      // We need this line so that the class can populate its $this in methods that are part of 
      // a singleton class.
-     $self = this;
+     //$self = this;
                               
-  //   console.log('  initObject - instantiate: ', instantiate, ' args: ', args, ' stack: ', this, ' - $self: ', $self);
+  //  console.log('  initObject - instantiate: ', instantiate, ' args: ', args, ' stack: ', this);
      
      if (jqCacheLength > 0)
       this.each(function (index, element)
@@ -225,12 +242,17 @@ var xyz = false;
                    x++;
                   }
                  });
-
+   //  console.log(' found object: ', objectExists);
+     //console.log('   > obejct: ', classObject);
+//debugger;
      if (instantiate === false && objectExists === false)
       {
        if (args.callee.caller.caller == null)
         {
-        // debugger;
+    //     debugger;
+        
+         classObject = new getPluginClass(this,
+                                          {});
         
          // We need to make this non-chainable to expose the class object since we know we
          // will not jQuery chain it (since it will be $(selector).plugin.method())
@@ -238,20 +260,19 @@ var xyz = false;
                      "chainable" : false
                     }),
          
-         classObj.init(this);
+         classObject.init(this);
          
          jqCache.push({ 
                        // "config" : {}, // this gets set AFTER the classObject is resolved
                        "elements" : this, 
-                       "object" : classObj 
+                       "object" : classObject 
                       });
          
          jqCache[jqCache.length - 1].config = getConfig();
                       
-         $.extend($.fn[pluginName].constructor.prototype, classObj);
+    //     $.extend($.fn[pluginName].constructor.prototype, classObject);
          
-         classObject = classObj;
-         debugger;
+      //   debugger;
         }
  //      debugger;
       }                             
@@ -284,68 +305,55 @@ var xyz = false;
               
       }        
       
+     // We need this line so that the class can populate its $this in methods that are part of 
+     // a singleton class.
+     $self = this;
+   
      return getConfig().chainable === true   // checks for chaining in main plugin
              ? this                          // returns chainability hook
-             : classObj || classObject;                  // returns OOP object hook                           
+             : classObject;                  // returns OOP object hook                           
     }
     
    function initPlugin(args)
     {
-     var error,
-         eventPool = args.pool,
-         pluginVersion = args.version;
-         
-     pluginName = args.name; 
-
-     try                                       // meat 
+     var error,                          // We need to localize error so it doesn't leak into global namespace
+         eventPool = args.pool,          // This is our event pool localized to reduce chain lookup where applicable
+         pluginName = args.name,         // This is our plugin name localized to reduce chain lookup where applicable
+         pluginVersion = args.version;   // This is our plugin version  localized to reduce chain lookup where applicable
+        
+     // Anything could go wrong in the initialization phase of the plugin so we wrap it in a try/catch.  Most likely
+     // nothing will go wrong so if you don't want the overhead of the try/catch you can simply comment it out - at
+     // your own risk. 
+     try 
       {
-       
-       // Step 1: register plugin
-       
-       classObj = new getPluginClass(args[0] && args[0].properties || {});
-       
+       // Here we are simply registering the plugin to jQuery's prototype - ahem, plugin registry.
        $.fn[pluginName] = function () 
                            {
-                            debugger;
                             // This gets called AFTER the init() and mainly is responsible for taking the
-                            // arguments passed into a plugin call.
-                            return initObject.apply(this, [true, arguments]);
+                            // arguments passed into a plugin call via syntax $(selector).plugin(args)
+                            return initObject.apply(this, [pluginName, true, arguments]);
                            };
                         
-       $.extend($.fn[pluginName].constructor.prototype, classObj);
-      
-       // Step 2: intercept jquery init
+       // Here begins some of the black magic.  We want to override jQuery's init function so we can intercept
+       // any selectors.  This will be important when we will want to dynamically override a plugin's instance's
+       // prototype as to allow dot notation (e.g. $(selector).plugin.method()).  This will ESPECIALLY be 
+       // important for uninitialized plugins - or in other words that never get called via the standard syntax
+       // of $(selector).plugin() at least once (notice the parenthesis).
        $.fn.extend({ 
                    "init" : function () 
                              {
-                              // When we call a plugin like $(selector).plugin(), this init() will be called
-                              // BEFORE the above step 1 gets called.
-                             
                               var selector = arguments[0],
                                   context = arguments[1],
-                                  rootQuery = arguments[2];
-                                  
-                            //      $this;
-                                  
-                              classObject = null;
-                              
-                              pluginContext = context;
-                              pluginSelector = selector;
-                              
-                              $self = new jqInit(selector, context, rootQuery);
+                                  rootQuery = arguments[2],
+                                  $this = $self = new jqInit(selector, context, rootQuery);
                             
                               // The reason we need the following is to find if we already have an object
                               // for the given selector.  This will be necessary for syntax calls such 
                               // as $(selector).plugin.method() - in other words, where plugin does not
                               // take parenthesis.
-                              
-                           //   console.log('selector: ', selector, ' context: ', context, ' stack: ', $self);
-                           
-                            //  debugger;
-                              initObject.apply($self, [false, arguments]);
+                              initObject.apply($this, [pluginName, false, arguments]);
                                
-                              
-                              return $self;
+                              return $this;
                              }
                    });
                    
@@ -354,20 +362,14 @@ var xyz = false;
      catch (error)
       {
        $(eventPool).trigger("error." + pluginName,
-                            error);                           // in case something breaks let us know.
+                            error);                // in case something breaks let us know via a namespaced event
       }
     }
 
    var $self, // this is a weird one.  We have to have it here for uninstantiated $(selector).plugin.method() syntax
-       classObj,
-       classObject, 
-       jqInit = $.fn.init,
-       jqCache = [],
-       pluginContext,
-       pluginName,
-       pluginSelector;
-           
-     //      debugger;
+    
+       jqInit = $.fn.init,  // We need to capture a reference to jQuery's init function since we will override it.
+       jqCache = [];        // This is our instance registry that contains all our plugin instances.
            
    initPlugin({
                "name" : config.name || "unknown",  // plugin name 
