@@ -401,7 +401,6 @@ var xyz = false;
                             // This gets called AFTER the init() and mainly is responsible for taking the
                             // arguments passed into a plugin call via syntax $(selector).plugin(args)
                             
-                            console.log('plugin');
                             return initObject.apply(this, [pluginName, true, arguments]);
                            };
                         
