@@ -2,7 +2,16 @@ jQuery Plugin Pattern
 
 by Milan Adamovsky
  
-The goal of this project is to provide a way to code jQuery plugin in a way that allow traditional object oriented programming paradigms (dot notation, inheritance, etc) while still not breaking the official jQuery plugin authoring pattern.
+Goals
+=====
+ 
+The goal of this project is to provide a way to code jQuery plugin that allow traditional object oriented programming paradigms (dot notation, inheritance, etc) while remaining backwards compatible with the official jQuery plugin authoring pattern.
+
+The target audience for this pattern are jQuery plugin authors and companies who want to create reusable widgets using one common pattern.  Large enterprise who do use jQuery and want to modularize their widgets and want a more sophisticated pattern than that offered by jQuery will greatly benefit from this pattern as well as it opens up new opportunities for more sophisticated widgets.
+
+Since jQuery doesn't have the notion of an object, this pattern addresses that by making each selected set of elements be a new reusable object that in turn permits to save state across multiple instances.
+
+The gist of it is that we are marrying OOP with jQuery with a focus on plugin development purposes.
 
 Syntax
 ======
