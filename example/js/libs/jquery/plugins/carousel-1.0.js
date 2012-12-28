@@ -14,13 +14,14 @@ var xyz = false;
      // by the selector on which the plugin is run.
     
      var content;  // this is needed in case we create new jquery objects within the plugin code
-         
+     /*    
      if (!$this)
       {
-     //  debugger;
        $this = $self;
       }
-      
+    */
+     var self = this;
+     
      args = $.extend({
                       "content" : "some random content",
                       "left" : leftHandler,
@@ -49,8 +50,8 @@ var xyz = false;
 
      function setMessage(msg)
       {
-      // console.log ('  SET MESSAGE : ', msg, ' - this: ', this);
-       debugger;
+       console.log ('  SET MESSAGE : ', msg, ' - this: ', this);
+       //debugger;
        this.message = msg;
       }
   
@@ -192,7 +193,9 @@ var xyz = false;
      var classKey,
          classObject,
          elementExists = false,
+         err,
          matchCounter = 0, 
+         prop,
          x = 0,
          y = 0,
          jqCacheLength = jqCache.length,
@@ -201,9 +204,7 @@ var xyz = false;
      // We need this line so that the class can populate its $this in methods that are part of 
      // a singleton class.
      //$self = this;
-                              
-  //  console.log('  initObject - instantiate: ', instantiate, ' args: ', args, ' stack: ', this);
-     
+                          
      if (jqCacheLength > 0)
       this.each(function (index, element)
                  {
@@ -242,15 +243,11 @@ var xyz = false;
                    x++;
                   }
                  });
-   //  console.log(' found object: ', objectExists);
-     //console.log('   > obejct: ', classObject);
-//debugger;
+                 
      if (instantiate === false && objectExists === false)
       {
        if (args.callee.caller.caller == null)
         {
-    //     debugger;
-        
          classObject = new getPluginClass(this,
                                           {});
         
@@ -269,15 +266,10 @@ var xyz = false;
                       });
          
          jqCache[jqCache.length - 1].config = getConfig();
-                      
-    //     $.extend($.fn[pluginName].constructor.prototype, classObject);
-         
-      //   debugger;
+      
         }
- //      debugger;
       }                             
      else if (instantiate === true && objectExists === false)
-    // if (this.length > 0 && objectExists === false)
       {
        classObject = new getPluginClass(this, args[0] && args[0].properties || {});
               
@@ -301,8 +293,85 @@ var xyz = false;
         jqCache[jqCache.length - 1].config = getConfig(),
         classObject.init(this);
        
-       $.extend($.fn[pluginName].constructor.prototype, classObject); 
-              
+       // If we use the $.extend() method what will happen is it will do a shallow copy of the object and 
+       // apply it to the prototype as a copy.
+       // This means if it's a copy we're not dealing with the real object from the jqCache, so any changes
+       // we make to the members will not stay and thus the state is lost.
+       // So what we do here is intercept the object's interface to bind it to the corresponding object
+       // since what we are doing is essentially what $.extend() does except we're not just copying it,
+       // we're copying over the interface, but adding plumbing to rewire 'this' to be the object. 
+       // So do NOT use this $.extend($.fn[pluginName].constructor.prototype, classObject); to extend
+       // your class - it will just make a copy that will effectively lose state.
+
+       for (prop in classObject) 
+        {
+         // We do not want to waste time with trying to intercept functions that are inherited. However
+         // if this is something that you do want, you may want to edit this piece of code.  Usually this
+         // is not needed.  Be careful not just to remove this piece of code, as removing it will cause
+         // for all kinds of functions to try to be intercepted which we're not interested in.
+         if (!classObject.hasOwnProperty(prop)) 
+          continue; 
+          
+         if (typeof classObject[prop] == 'function') 
+          {
+           $.fn[pluginName].constructor.prototype[prop] = (function (prop)
+                                                            {
+                                                             return function (args) 
+                                                                     {
+                                                                      classObject[prop].apply(classObject, arguments);
+                                                                     };
+                                                            })(prop);
+          }              
+         /*
+         // IMPORTANT NOTICE:                                
+         // This whole else block is commented out since we should usually not want users to access
+         // properties directly such as $(selector).plugin.property = "xxx";  If you want your plugin
+         // to allow this feel free to uncomment this block.
+         //
+         // If you unblock it, it can still serve as a good way to allow users to quickly access the
+         // property for read-only purposes on all browsers (even those that do not support the
+         // __defineGetter__ and __defineSetter__).  On most modern browsers uncommenting this would
+         // allow direct read/write access to the properties.
+         else
+          {
+           
+           // Since IE doesn't have good support for defining getter and setters, we have to wrap
+           // this in a try/catch.  This means that in IE we will not be able to do something like
+           // this $(selector).plugin.property = value; and expect it to keep state from instance
+           // to instance since it's a shallow copied property.  In browsers where we can define
+           // getters and setters we can directly access the properties.  The argument can be made
+           // that this is actually a feature since in proper OOP one should never access a property
+           // directly, so you should actually have a getter/setter method that would it access the
+           // given property - such as $(selector).plugin.getProperty(); 
+           
+           try 
+            {
+             $.fn[pluginName].constructor.prototype.__defineSetter__(prop, 
+                                                                     (function(prop)
+                                                                       {
+                                                                        return function(val)
+                                                                                {
+                                                                                 classObject[prop] = val;
+                                                                                };
+                                                                       })(prop));
+                                                                            
+             $.fn[pluginName].constructor.prototype.__defineGetter__(prop, 
+                                                                     (function(prop)
+                                                                       {
+                                                                        return function()
+                                                                                {
+                                                                                 return classObject[prop];
+                                                                                };
+                                                                       })(prop));
+             }
+            catch (err)
+             {                                                        
+              $.fn[pluginName].constructor.prototype[prop] = classObject[prop];
+             }
+          }
+          */
+        }
+       
       }        
       
      // We need this line so that the class can populate its $this in methods that are part of 
@@ -331,6 +400,8 @@ var xyz = false;
                            {
                             // This gets called AFTER the init() and mainly is responsible for taking the
                             // arguments passed into a plugin call via syntax $(selector).plugin(args)
+                            
+                            console.log('plugin');
                             return initObject.apply(this, [pluginName, true, arguments]);
                            };
                         
@@ -339,13 +410,16 @@ var xyz = false;
        // prototype as to allow dot notation (e.g. $(selector).plugin.method()).  This will ESPECIALLY be 
        // important for uninitialized plugins - or in other words that never get called via the standard syntax
        // of $(selector).plugin() at least once (notice the parenthesis).
-       $.fn.extend({ 
-                   "init" : function () 
+       $.fn.init = function () 
                              {
                               var selector = arguments[0],
                                   context = arguments[1],
                                   rootQuery = arguments[2],
-                                  $this = $self = new jqInit(selector, context, rootQuery);
+                                  $this = new jqInit(selector, context, rootQuery);
+                            
+                              $self = $this;
+                              
+                            //  console.log("resolve (", selector, ")");
                             
                               // The reason we need the following is to find if we already have an object
                               // for the given selector.  This will be necessary for syntax calls such 
@@ -353,9 +427,10 @@ var xyz = false;
                               // take parenthesis.
                               initObject.apply($this, [pluginName, false, arguments]);
                                
+                              // Do not forget to return the selected element stack!
                               return $this;
-                             }
-                   });
+                             };
+                 
                    
 
       }
